@@ -1,12 +1,11 @@
-function retentionUniPlot(x,y,f,initParam,optimParam,clearfig) %This function plots a comparative graphic between optimized and non-optimized models.
-   %eps=(x(end)-x(1))/8;
-   %x_plot=linspace(x(1)-eps,x(end)+eps,100); %x coordinate to plot discrete data
-   y_no_optim_plot=f(initParam);
-   y_optim_plot=f(optimParam);
+function retentionUniPlot(x,y,x_plot,f,f_plot,initParam,optimParam,clearfig) %This function plots a comparative graphic between optimized and non-optimized models.
+
+   y_no_optim_plot=f_plot(initParam);
+   y_optim_plot=f_plot(optimParam);
    subplot(1,2,1);
    plot(x,y,'o')
    hold on
-   plot(x, y_no_optim_plot,'g')
+   plot(x_plot, y_no_optim_plot,'g')
    xlabel("")
    ylabel("")
    legend('Raw data','Non-optimized model for retention')
@@ -14,7 +13,7 @@ function retentionUniPlot(x,y,f,initParam,optimParam,clearfig) %This function pl
    subplot(1,2,2);
    plot(x,y,'o')
    hold on
-   plot(x,y_optim_plot,'r')
+   plot(x_plot,y_optim_plot,'r')
    xlabel("")
    ylabel("")
    legend('Raw data','Optimized model for retention')

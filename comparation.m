@@ -1,16 +1,20 @@
-function comparation(x,y,f,D,selectedModel,errorMatrix)
-  m=(size(D)(2)-2)/2
-  D(:,m+1:2*m)
-  f
-
-  y_predicted=f(D(:,m+1:2*m));%evaluation of optim parameters
-  y
-  y_predicted
- for i=1:length(D)
-  plot(y,y_predicted(i,:))
+function comparation(x,y,f,D,errorMatrix)
+  close all;
+  m=(size(D)(2)-2)/2;
+  A=D(:,m+1:2*m);
+  plot(y,y,'r');
   hold on
- endfor
- figure
- plotErrorMatrix(errorMatrix,x,y)
- endfunction
+  plot(y,y,'+')
+  hold on
+  for i=1:rows(D)
+   y_predicted=f(A(i,:));
+   plot(y,y_predicted,'o')
+   hold on
+  endfor
+  xlabel("k")
+  ylabel("predicted k")
+  legend("Retention data")
+  title("Retention Prediction")
+  waitforbuttonpress();
+endfunction
 

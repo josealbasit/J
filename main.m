@@ -16,23 +16,22 @@ function main()
     selectedModel=chooseModel(modelType);
     errorMatrix=zeros(3*10+3,rows(A));%Error matrix to perform outlier detection later on
     %optimMethod=menu("Select an optimization method:","Levenberg-Marquadt","Nelder-Mead","Powell");
+    solutes=separateSolutes(A,modelType)
     if(modelType==1)
-         [bestParam,x,y]=univariantRetOptim(A,selectedModel,optimMethod,errorMatrix)
+         [x,x_plot,iterRandom] = defOptimConstUni(A);
+         for i=1:size(solutes)(2)
+           [bestParam]=univariantRetOptim(x,solutes(:,i),x_plot,iterRandom,selectedModel,optimMethod,errorMatrix)
+            paramMatrix(i,:)=bestParam';
+         endfor
     elseif(modelType==2)
-       for i=1:3
-         optimMethod=i;
-         finalParam=bivariantRetOptim(A,selectedModel,optimMethod)
-           if(finalParam(length(finalParam)-1) < bestError)
-           bestError=finalParam(length(finalParam)-1);
-           bestParam=finalParam;
-           endif
-       endfor
+         [x,x1,x2,z,w,X,Y,iterRandom] = defOptimConstBi(A); %Defining constants for optimization calculation and plotting...
+         [bestParam x z]=bivariantRetOptim(A,selectedModel,optimMethod)
     endif
     close all;
     answer=questdlg("Do you want to enter a MANUAL estimation of initial parameters and perform an optimization?")
     if (length(answer)== 3)
       manualParam=manualParameters(A,selectedModel,modelType)
-      optimManualParam=manualOptimization(A,manualParam,selectedModel,modelType)
+      bestParam=manualOptimization(A,manualParam,selectedModel,modelType)
     endif
 %Corresponds to saving code...
 % if (counterData == 0)

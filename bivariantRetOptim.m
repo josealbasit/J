@@ -1,76 +1,41 @@
-function finalParam=bivariantRetOptim(A,selectedModel,optimMethod)
-%This function uses Levenberg Marquadt method to optimize parameters of
+function [bestParam x z]=bivariantRetOptim(A,selectedModel,optimMethod)
+%This function uses Levenberg Marquadt,NelderMead and Powell methods to optimize parameters of
 %diferent retention mathematical models. In this case, methods are bivariant, i.e, two
 %variables are needed for retention estimation: these variables are a combination of surfactant and additives, depending on the case.
-  [x,x1,x2,z,w,X,Y,iter] = defOptimConstBi(A); %Defining constants for optimization calculation and plotting...
-  [f,f_plot,f_error,estimParam]=prepareBiModel(x,x1,x2,z,w,X,Y,selectedModel,optimMethod); %f_error was f_leasqr
-  initialParameters=generateInitialParameters(estimParam,iter);
-  l=2*length(estimParam)+2;
-  B=zeros(iter+1,l);%This matrix will store different initial and optim Parameters along with their associated optimization results: relative error and R^2.
-  %Checking previous conditions for leasqr() to work properly...
-  global verbose; verbose = false;
-  if(optimMethod==1)
-    [z_optim, optimParameters, kvg1, iter1, corp1, covp1, covr1, stdresid1, Z1, r2] = leasqr (x, z, estimParam, f);
-    z_no_optim=f_error(estimParam);
-    z_optim=f_error(optimParameters);
-    z_no_optim_plot=f_plot(estimParam);
-    z_optim_plot=f_plot(optimParameters);
-    retentionBiPlot(X,Y,z_no_optim_plot,z_optim_plot,1);
-    %Optimization relative error...
-    r2=[cov(z,z_optim)/(std(z)*std(z_optim))].^2
-    error_no_optim=sumsq(z-z_no_optim)/sumsq(z);
-    error_optim=sumsq(z-z_optim)/sumsq(z);
-    estimParam
-    optimParameters
-    B(1,:)=[estimParam optimParameters' error_optim r2];
-  for i=2:iter+1
-    [z_optim, optimParameters, kvg1, iter1, corp1, covp1, covr1, stdresid1, Z1, r2] = leasqr (x, z, initialParameters(:,i-1), f);
-    z_no_optim=f_error(initialParameters(:,i-1));
-    z_optim=f_error(optimParameters);
-    z_no_optim_plot=f_plot(initialParameters(:,i-1));
-    z_optim_plot=f_plot(optimParameters);
-    retentionBiPlot(X,Y,z_no_optim_plot,z_optim_plot,1);
-    %Optimization relative error...
-    r2=[cov(z,z_optim)/(std(z)*std(z_optim))].^2
-    error_no_optim=sumsq(z-z_no_optim)/sumsq(z);
-    error_optim=sumsq(z-z_optim)/sumsq(z);
-    B(i,:)=[initialParameters(:,i-1)' optimParameters' error_optim r2];
+
+  [f_min,f_plot,f,empiricalParam]=prepareBiModel(x,x1,x2,z,w,X,Y,selectedModel,optimMethod);
+  initialParameters=generateInitialParameters(empiricalParam,iterRandom);
+  l=2*length(empiricalParam)+2;
+  B=zeros(iterRandom,l);%This matrix will store different initial and optim Parameters along with their associated optimization results: relative error and R^2.
+  C=zeros(iterRandom,l);
+  D=zeros(0,0);
+  %Now we generate random parameters
+  randomParameters=generateRandomParameters (empiricalParam,iterRandom)
+  for i=1:iterRandom
+    initParam=randomParameters(:,i)'
+    [optimParam r2 errorVector errorOptim]=optimizationProcess(x,z,f_min,f,initParam,3);
+    retentionBiPlot(X,Y,f_plot,initParam,optimParam,1); %Plotting results...
+    errorMatrix(i,:)=errorVector;
+    B(i,:)=[initParam optimParam errorOptim r2]; %Storing optimized values
   endfor
-  elseif(optimMethod > 1)
-    if(optimMethod==2)
-    [optimParameters,fval]=fminsearch(f,estimParam);%Nelder-Mead optimization
-    elseif(optimMethod==3)
-    [optimParameters,fval]=powell(f,estimParam);%Powell method
-    endif
-    z_no_optim=f_error(estimParam);
-    z_optim=f_error(optimParameters);
-    z_no_optim_plot=f_plot(estimParam);
-    z_optim_plot=f_plot(optimParameters);
-    retentionBiPlot(X,Y,z_no_optim_plot,z_optim_plot,1);
-    %Optimization relative error...
-    r2=[cov(z,z_optim)/(std(z)*std(z_optim))].^2
-    error_no_optim=sumsq(z-z_no_optim)/sumsq(z);
-    error_optim=sumsq(z-z_optim)/sumsq(z);
-    optimParameters
-    B(1,:)=[estimParam optimParameters error_optim r2];
-    for i=2:iter+1
-      if(optimMethod==2)
-        [optimParameters,fval]=fminsearch(f,initialParameters(:,i-1));
-      elseif(optimMethod==3)
-        [optimParameters,fval]=powell(f,initialParameters(:,i-1));
-      endif
-      z_no_optim=f_error(initialParameters(:,i-1));
-      z_optim=f_error(optimParameters);
-      z_no_optim_plot=f_plot(initialParameters(:,i-1));
-      z_optim_plot=f_plot(optimParameters);
-      retentionBiPlot(X,Y,z_no_optim_plot,z_optim_plot,1);
-      %Optimization relative error...
-      r2=[cov(z,z_optim)/(std(z)*std(z_optim))].^2
-      error_no_optim=sumsq(z-z_no_optim)/sumsq(z);
-      error_optim=sumsq(z-z_optim)/sumsq(z);
-      B(i,:)=[initialParameters(:,i-1)' optimParameters' error_optim r2];
-  endfor
-  endif
-  optim=find(min(B(:,l-1)));
-  finalParam=B(optim,:)';
+   rndOptimError=find(B(:,l-1)==min(B(:,l-1)))
+   t=(l-2)/2; %Number of parameters
+   B(rndOptimError,:)
+   estimParam=B(rndOptimError,t+1:2*t)';
+   estimParameters=generateEstimParameters(estimParam,iterRandom)
+   for j=1:3
+   optimMethod=j;
+   [f_min,f_plot,f,empiricalParam]=prepareBiModel(x,x1,x2,z,w,X,Y,selectedModel,optimMethod);
+   for i=1:iterRandom
+      initParam=estimParameters(:,i);
+      [optimParam r2 errorVector errorOptim]=optimizationProcess(x,z,f_min,f,initParam,optimMethod)
+      retentionBiPlot(X,Y,f_plot,initParam,optimParam,1); %Plotting results...
+      errorMatrix(i,:)=errorVector;
+      C(i,:)=[initParam' optimParam' errorOptim r2]; %Storing optimized values
+    endfor
+    D=[D;C]
+    endfor
+   posOptimError=find(D(:,l-1)==min(D(:,l-1)));
+   bestParam=D(posOptimError,:)'
+   comparation(x,z,f,D,errorMatrix);
 endfunction
