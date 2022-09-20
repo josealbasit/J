@@ -5,7 +5,7 @@ function main()
     [modelType,changeRetModel,selectNewData,counterModel,compound,counterData,bestError,optimMethod] = mainConstants(); %Initial constants...
     [initialDir, desktopDir]=directories(); %Directories...
     while (modelType == 0)
-      [fileName, filePath]=introRetentionData(desktopDir) %Get file name and path...
+      [fileName, filePath]=introRetentionData(desktopDir); %Get file name and path...
       addpath(filePath); %Add current file path
       A=loadFile(fileName); %Loading file to the system...
       modelType=checkRetData(A); %Checking which models we can use, i.e, dimension of the matrix...
@@ -14,24 +14,28 @@ function main()
 %optimize parameters.
     while (changeRetModel == true)
     selectedModel=chooseModel(modelType);
-    errorMatrix=zeros(3*10+3,rows(A));%Error matrix to perform outlier detection later on
-    %optimMethod=menu("Select an optimization method:","Levenberg-Marquadt","Nelder-Mead","Powell");
+    %optimMethod=menu("Select an optimization method:","Levenberg-Marquadt","Nelder-Mead","Powell"); 
     solutes=separateSolutes(A,modelType)
     if(modelType==1)
-         [x,x_plot,iterRandom] = defOptimConstUni(A);
+         [xRaw,x_plot,iterRandom,errorMatrix] = defOptimConstUni(A);
          for i=1:size(solutes)(2)
-           [bestParam]=univariantRetOptim(x,solutes(:,i),x_plot,iterRandom,selectedModel,optimMethod,errorMatrix)
-            paramMatrix(i,:)=bestParam';
+           bestParam=univariantRetOptim(xRaw,solutes(:,i),x_plot,iterRandom,selectedModel,optimMethod,errorMatrix);
+            paramMatrix(:,i)=bestParam';
          endfor
     elseif(modelType==2)
-         [x,x1,x2,z,w,X,Y,iterRandom] = defOptimConstBi(A); %Defining constants for optimization calculation and plotting...
-         [bestParam x z]=bivariantRetOptim(A,selectedModel,optimMethod)
-    endif
+    for i=1:size(solutes)(2)
+         [xRaw,X,Y,iterRandom] = defOptimConstBi(A); %Defining constants for optimization calculation and plotting...
+         [bestParam x z]=bivariantRetOptim(xRaw,solutes(:,i),X,Y,iterRandom,selectedModel,optimMethod);
+         paramMatrix(:,i)=bestParam';
+    endfor
+  endif
+    paramMatrix
     close all;
-    answer=questdlg("Do you want to enter a MANUAL estimation of initial parameters and perform an optimization?")
+    answer=questdlg("Do you want to enter a MANUAL estimation of initial parameters and perform an optimization?");
     if (length(answer)== 3)
-      manualParam=manualParameters(A,selectedModel,modelType)
-      bestParam=manualOptimization(A,manualParam,selectedModel,modelType)
+      
+      manualParam=manualParameters(A,selectedModel,modelType,paramMatrix(:,i));
+      bestParam=manualOptimization(A,manualParam,selectedModel,modelType);
     endif
 %Corresponds to saving code...
 % if (counterData == 0)
@@ -52,7 +56,7 @@ function main()
         changeRetModel=false;
         selectNewData=false;
         close all;
-        msgbox("Bye bye! Ens veiem!")
+        msgbox("Bye bye! Ens veiem!");
     endswitch
     endwhile
   endwhile

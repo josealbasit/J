@@ -1,4 +1,4 @@
-function manualParam=manualParameters(A,selectedModel,modelType)
+function manualParam=manualParameters(A,selectedModel,modelType,bestParam)
   if(modelType==1)
     if(or(selectedModel == 1,selectedModel == 5,selectedModel == 6,selectedModel == 8))
       prompt={"Parameter p1","Parameter p2"};

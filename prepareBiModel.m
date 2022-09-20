@@ -9,7 +9,7 @@ function [f_min,f_plot,f,empiricalParam]=prepareBiModel(x,x1,x2,z,w,X,Y,selected
       f_min=@(x,p) p(1)./(1+p(2).*x(:,1)+p(3).*x(:,2)+p(4).*x(:,1).*x(:,2));
       else
       f_min=@(p) sumsq(z-p(1)./(1+p(2).*x1+p(3).*x2+p(4).*x1.*x2));
-      endif
+    endif
       coef=(regress(1./z,[w,x1,x2,x1.*x2]));
       empiricalParam(1)=inv(coef(1)); empiricalParam(2)=coef(2)*empiricalParam(1); empiricalParam(3)=coef(3)*empiricalParam(1); empiricalParam(4)=coef(4)*empiricalParam(1);
     case 2

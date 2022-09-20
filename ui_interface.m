@@ -1,12 +1,12 @@
-function ui_interface()
-
+function ui_interface(selectedModel,x,x_plot,y0,f_min,f,f_plot,initParam)
+selectedModelstr=num2str(selectedModel);
 close all
 clear h
 
 graphics_toolkit qt
 
 h.ax = axes ("position", [0.05 0.42 0.5 0.5]);
-h.fcn = @(x) polyval([-0.1 0.5 3 0], x);
+h.fcn = @(p) f([initParam]);
 
 function update_plot (obj, init = false)
 
@@ -27,28 +27,41 @@ function update_plot (obj, init = false)
     case {h.plot_title_edit}
       v = get (gcbo, "string");
       set (get (h.ax, "title"), "string", v);
-    case {h.linecolor_radio_blue}
-      set (h.linecolor_radio_red, "value", 0);
-      replot = true;
-    case {h.linecolor_radio_red}
-      set (h.linecolor_radio_blue, "value", 0);
-      replot = true;
-    case {h.linestyle_popup, h.markerstyle_list}
-      replot = true;
-    case {h.noise_slider}
+    case {h.p1_slider}
+      recalc = true;
+    case {h.p2_slider}
       recalc = true;
   endswitch
 
   if (recalc || init)
-    x = linspace (-4, 9);
-    noise = get (h.noise_slider, "value");
-    set (h.noise_label, "string", sprintf ("Noise: %.1f%%", noise * 100));
-    y = sin(x)*noise;
+    p1 = get (h.p1_slider, "value");
+    p2 = get (h.p2_slider, "value");
+    set (h.p1_label, "string", sprintf ("Parameter 1", p1));
+    set (h.p2_label, "string", sprintf ("Parameter 2", p2));
+    p1
+    p2=initParam(2);
+    p3=initParam(3);
+    initParam
+    x
+    y0=f_min([initParam])
+    f(initParam)
+    [optimParam r2 errorVector errorOptim]=optimizationProcess(x,y0,f_min,f,[p1 p2 p3],2)
+    f(optimParam)
+    y_optim_plot=f_plot(optimParam);
     if (init)
-      h.plot = plot (x, y, "b");
+      %h.plot = plot (x, y, "b");
+      %hold on
+      "hola"
+      initParam 
+      f_plot
+      y_no_optim_plot=f_plot(initParam)
+      h.plot = plot (x , y0,'+');
+      hold on
+      h.plot = plot(x_plot,y_no_optim_plot,'r')
       guidata (obj, h);
     else
-      set (h.plot, "ydata", y);
+      h.plot=plot(x_plot, y_optim_plot,'b');
+      %set (h.plot, "ydata", y);
     endif
   endif
 
@@ -73,15 +86,20 @@ endfunction
 
 
 ## plot title
+if (selectedModel==1)
+  equationName="LSS";
+  
+endif
+
 h.plot_title_label = uicontrol ("style", "text",
                                 "units", "normalized",
-                                "string", "plot title:",
+                                "string", equationName,
                                 "horizontalalignment", "left",
                                 "position", [0.6 0.85 0.35 0.08]);
 
 h.plot_title_edit = uicontrol ("style", "edit",
                                "units", "normalized",
-                               "string", "Please fill me! (edit)",
+                               "string", ["Equation " selectedModelstr],
                                "callback", @update_plot,
                                "position", [0.6 0.80 0.35 0.06]);
 
@@ -106,74 +124,126 @@ h.print_pushbutton = uicontrol ("style", "pushbutton",
                                 "string", "print plot\n(pushbutton)",
                                 "callback", @update_plot,
                                 "position", [0.6 0.45 0.35 0.09]);
-## noise
-h.noise_label = uicontrol ("style", "text",
+## p1
+h.p1_label = uicontrol ("style", "text",
                            "units", "normalized",
-                           "string", "Noise:",
+                           "string", "Parameter 1",
                            "horizontalalignment", "left",
                            "position", [0.05 0.3 0.35 0.08]);
 
-h.noise_slider = uicontrol ("style", "slider",
+h.p1_slider = uicontrol ("style", "slider",
                             "units", "normalized",
                             "string", "slider",
                             "callback", @update_plot,
-                            "value", 0.4,
+                            "value", initParam(1),
                             "position", [0.05 0.25 0.35 0.06]);
+                            
+## p1
+                           
+h.p2_label = uicontrol ("style", "text",
+                           "units", "normalized",
+                           "string", "Parameter 2",
+                           "horizontalalignment", "left",
+                           "position", [0.05 0.15 0.35 0.08]);
 
+h.p2_slider = uicontrol ("style", "slider",
+                            "units", "normalized",
+                            "string", "slider",
+                            "callback", @update_plot,
+                            "value", initParam(2),
+                            "position", [0.05 0.1 0.35 0.06]);
+% p3
+                           
+h.p3_label = uicontrol ("style", "text",
+                           "units", "normalized",
+                           "string", "Parameter 3",
+                           "horizontalalignment", "left",
+                           "position", [0.45 0.3 0.35 0.08]);
+
+h.p3_slider = uicontrol ("style", "slider",
+                            "units", "normalized",
+                            "string", "slider",
+                            "callback", @update_plot,
+                            "value", initParam(2),
+                            "position", [0.45 0.25 0.35 0.06]);
+
+% p4
+                           
+h.p4_label = uicontrol ("style", "text",
+                           "units", "normalized",
+                           "string", "Parameter 4",
+                           "horizontalalignment", "left",
+                           "position", [0.455 0.15 0.35 0.08]);
+
+h.p4_slider = uicontrol ("style", "slider",
+                            "units", "normalized",
+                            "string", "slider",
+                            "callback", @update_plot,
+                            "value", initParam(2),
+                            "position", [0.45 0.1 0.35 0.06]);       
+       
+       
 ## linecolor
-h.linecolor_label = uicontrol ("style", "text",
-                               "units", "normalized",
-                               "string", "Linecolor:",
-                               "horizontalalignment", "left",
-                               "position", [0.05 0.12 0.35 0.08]);
+%h.linecolor_label = uicontrol ("style", "text",
+%                               "units", "normalized",
+%                               "string", "Linecolor:",
+%                               "horizontalalignment", "left",
+%                               "position", [0.05 0.12 0.35 0.08]);
+%
+%h.linecolor_radio_blue = uicontrol ("style", "radiobutton",
+%                                    "units", "normalized",
+%                                    "string", "blue",
+%%                                    "callback", @update_plot,
+%                                    "position", [0.05 0.08 0.15 0.04]);%
 
-h.linecolor_radio_blue = uicontrol ("style", "radiobutton",
-                                    "units", "normalized",
-                                    "string", "blue",
-                                    "callback", @update_plot,
-                                    "position", [0.05 0.08 0.15 0.04]);
-
-h.linecolor_radio_red = uicontrol ("style", "radiobutton",
-                                   "units", "normalized",
-                                   "string", "red",
-                                   "callback", @update_plot,
-                                   "value", 0,
-                                   "position", [0.05 0.02 0.15 0.04]);
+%h.linecolor_radio_red = uicontrol ("style", "radiobutton",
+ %                                  "units", "normalized",
+  %                                 "string", "red",
+   %                                "callback", @update_plot,
+    %                               "value", 0,
+     %                              "position", [0.05 0.02 0.15 0.04]);
 
 ## linestyle
-h.linestyle_label = uicontrol ("style", "text",
-                               "units", "normalized",
-                               "string", "Linestyle:",
-                               "horizontalalignment", "left",
-                               "position", [0.25 0.12 0.35 0.08]);
-
-h.linestyle_popup = uicontrol ("style", "popupmenu",
-                               "units", "normalized",
-                               "string", {"-  solid lines",
-                                          "-- dashed lines",
-                                          ":  dotted lines",
-                                          "-. dash-dotted lines"},
-                               "callback", @update_plot,
-                               "position", [0.25 0.05 0.3 0.06]);
+%h.linestyle_label = uicontrol ("style", "text",
+ %                              "units", "normalized",
+  %                             "string", "Linestyle:",
+   %                            "horizontalalignment", "left",
+    %                           "position", [0.25 0.12 0.35 0.08]);
+%
+%h.linestyle_popup = uicontrol ("style", "popupmenu",
+ %                              "units", "normalized",
+  %                             "string", {"-  solid lines",
+   %                                       "-- dashed lines",
+    %                                      ":  dotted lines",
+     %                                     "-. dash-dotted lines"},
+      %                         "callback", @update_plot,
+       %                        "position", [0.25 0.05 0.3 0.06]);
 
 ## markerstyle
-h.markerstyle_label = uicontrol ("style", "text",
-                                 "units", "normalized",
-                                 "string", "Modelos de retención",
-                                 "horizontalalignment", "left",
-                                 "position", [0.58 0.3 0.35 0.08]);
-
-h.markerstyle_list = uicontrol ("style", "listbox",
-                                "units", "normalized",
-                                "string", {"'1' Modelo 1",
-                                           "'2' Modelo 2",
-                                           "'3' Modelo 3",
-                                           "'4' Modelo 4",
-                                           "'5' Modelo 5",
-                                           "'6' Modelo 6",
-                                           "'7' Modelo 7"},
-                                "callback", @update_plot,
-                                "position", [0.58 0.04 0.38 0.26]);
+%h.markerstyle_label = uicontrol ("style", "text",
+ %                                "units", "normalized",
+  %                               "string", "Marker style:",
+   %                              "horizontalalignment", "left",
+    %                             "position", [0.58 0.3 0.35 0.08]);
+%
+%h.markerstyle_list = uicontrol ("style", "listbox",
+ %                               "units", "normalized",
+  %                              "string", {"none",
+   %                                        "'+' crosshair",
+    %                                       "'o'  circle",
+     %                                      "'*'  star",
+      %                                     "'.'  point",
+       %                                    "'x'  cross",
+        %                                   "'s'  square",
+         %                                  "'d'  diamond",
+          %                                 "'^'  upward-facing triangle",
+           %                                "'v'  downward-facing triangle",
+            %                               "'>'  right-facing triangle",
+             %                              "'<'  left-facing triangle",
+              %                             "'p'  pentagram",
+               %                            "'h'  hexagram"},
+                %                "callback", @update_plot,
+                 %               "position", [0.58 0.04 0.38 0.26]);
 
 set (gcf, "color", get(0, "defaultuicontrolbackgroundcolor"))
 guidata (gcf, h)

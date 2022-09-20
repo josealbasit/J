@@ -9,5 +9,5 @@ function [optimParam r2 errorVector errorOptim]=optimizationProcess(x,y,f_min,f,
       endif
       y_optim=f(optimParam);
   endif
-      [r2 errorVector errorOptim]=optimStatistics(y,y_optim)
+      [r2 errorVector errorOptim]=optimStatistics(y,y_optim);
   end
