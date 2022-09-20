@@ -11,7 +11,10 @@ function [bestParam,x,y]=univariantRetOptim(xRaw,yRaw,x_plot,iterRandom,selected
    for i=1:iterRandom
     initParam=randomParameters(:,i)';
     [optimParam r2 errorVector errorOptim]=optimizationProcess(x,y,f_min,f,initParam,3);
+    r=rand;
+    if(r>.90)
     retentionUniPlot(x,y,x_plot,f,f_plot,initParam,optimParam,1); %Plotting results...
+    end
     errorMatrix(i,:)=errorVector;
     B(i,:)=[initParam optimParam errorOptim r2] %Storing optimized values
    endfor
@@ -19,7 +22,7 @@ function [bestParam,x,y]=univariantRetOptim(xRaw,yRaw,x_plot,iterRandom,selected
    t=(l-2)/2;
    estimParam=B(rndOptimError,t+1:2*t)';
    else
-   estimParam=empiricalParam;
+   estimParam=empiricalParam';
    endif
    estimParameters=generateEstimParameters(estimParam,iterRandom);
    for j=1:3
@@ -28,13 +31,19 @@ function [bestParam,x,y]=univariantRetOptim(xRaw,yRaw,x_plot,iterRandom,selected
     for i=1:iterRandom
       initParam=estimParameters(:,i);
       [optimParam r2 errorVector errorOptim]=optimizationProcess(x,y,f_min,f,initParam,optimMethod);
+      r=rand();
+      if (r>.9)
       retentionUniPlot(x,y,x_plot,f,f_plot,initParam,optimParam,1); %Plotting results...
+      end
       errorMatrix(i,:)=errorVector;
       C(i,:)=[initParam' optimParam' errorOptim r2]; %Storing optimized values
     endfor
     D=[D;C]
    endfor
    posOptimError=find(D(:,l-1)==min(D(:,l-1)));
+   if(posOptimError>1)
+   posOptimError=find(D(posOptimError,8)==max(D(posOptimError,8)));
+   end
    bestParam=D(posOptimError,:)';
    comparation(x,y,f,D,errorMatrix);
    plotErrorMatrix(errorMatrix,x,y);

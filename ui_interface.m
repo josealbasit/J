@@ -2,6 +2,7 @@ function ui_interface(selectedModel,x,x_plot,y0,f_min,f,f_plot,initParam)
 selectedModelstr=num2str(selectedModel);
 close all
 clear h
+equationName="Quadratic";
 
 graphics_toolkit qt
 
@@ -52,7 +53,7 @@ function update_plot (obj, init = false)
       %h.plot = plot (x, y, "b");
       %hold on
       "hola"
-      initParam 
+      initParam
       f_plot
       y_no_optim_plot=f_plot(initParam)
       h.plot = plot (x , y0,'+');
@@ -88,7 +89,7 @@ endfunction
 ## plot title
 if (selectedModel==1)
   equationName="LSS";
-  
+
 endif
 
 h.plot_title_label = uicontrol ("style", "text",
@@ -137,9 +138,9 @@ h.p1_slider = uicontrol ("style", "slider",
                             "callback", @update_plot,
                             "value", initParam(1),
                             "position", [0.05 0.25 0.35 0.06]);
-                            
+
 ## p1
-                           
+
 h.p2_label = uicontrol ("style", "text",
                            "units", "normalized",
                            "string", "Parameter 2",
@@ -153,7 +154,7 @@ h.p2_slider = uicontrol ("style", "slider",
                             "value", initParam(2),
                             "position", [0.05 0.1 0.35 0.06]);
 % p3
-                           
+
 h.p3_label = uicontrol ("style", "text",
                            "units", "normalized",
                            "string", "Parameter 3",
@@ -168,7 +169,7 @@ h.p3_slider = uicontrol ("style", "slider",
                             "position", [0.45 0.25 0.35 0.06]);
 
 % p4
-                           
+
 h.p4_label = uicontrol ("style", "text",
                            "units", "normalized",
                            "string", "Parameter 4",
@@ -180,9 +181,9 @@ h.p4_slider = uicontrol ("style", "slider",
                             "string", "slider",
                             "callback", @update_plot,
                             "value", initParam(2),
-                            "position", [0.45 0.1 0.35 0.06]);       
-       
-       
+                            "position", [0.45 0.1 0.35 0.06]);
+
+
 ## linecolor
 %h.linecolor_label = uicontrol ("style", "text",
 %                               "units", "normalized",
